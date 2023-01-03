@@ -1,18 +1,15 @@
-package main
+package model
 
-import ( 
-	"context"
-//	"github.com/gin-gonic/gin"
-//	"database/sql" 
+import (
+	"database/sql/driver"
 	"encoding/json"
-	"fmt"
-//	"net/http"
 	"time"
-	"os"
-	"io/ioutil"
-	"github.com/jackc/pgx/v5"
+
+	"github.com/pkg/errors"
 )
-type JsStruct struct {
+
+// Order - данные заказа
+type Order struct {
 	OrderUid    string `json:"order_uid"`
 	TrackNumber string `json:"track_number"`
 	Entry       string `json:"entry"`
@@ -60,37 +57,17 @@ type JsStruct struct {
 	OofShard          string    `json:"oof_shard"`
 }
 
-var dataCache = make(map[string]JsStruct, 10) 
+// Value - implementation for driver.Valuer
+func (a Order) Value() (driver.Value, error) {
+	return json.Marshal(a)
+}
 
-func main() { 
-	
-	DB_url := "postgres://adam_:1@localhost:5432/adam"
-	conn, err := pgx.Connect(context.Background(), os.Getenv(DB_url))
-	defer conn.Close(context.Background())
-	
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+// Scan - implementation for sql.Scanner
+func (a *Order) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return errors.Errorf("type assertion to []byte failed for %T = %v", value, value)
 	}
 
-
-	if err != nil { 
-		fmt.Print(err)
-	}
-	a := db_.QueryRow("SELECT * from order ")	
-	fmt.Print(a)
-	fmt.Print("ok")
-			
-	jsonFile, err := os.Open("model.json")
-
-	if err == nil {
-  		fmt.Println(err)
-	}
-
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	defer jsonFile.Close()
-
-	var JsElement JsStruct
-	json.Unmarshal(byteValue, &JsElement)
-	fmt.Print(JsElement.OrderUid)
-}	
+	return json.Unmarshal(b, &a)
+}
