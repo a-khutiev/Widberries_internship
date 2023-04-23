@@ -1,5 +1,12 @@
 package task
 
+import (
+	"fmt"
+	"log"
+
+	"github.com/beevik/ntp"
+)
+
 /*
 === Базовая задача ===
 
@@ -11,6 +18,10 @@ package task
 Программа должна корректно обрабатывать ошибки библиотеки: распечатывать их в STDERR и возвращать ненулевой код выхода в OS.
 Программа должна проходить проверки go vet и golint.
 */
-func Maain() {
-	println("ok")
+func Ain() {
+	time, err := ntp.Time("0.beevik-ntp.pool.ntp.org")
+	if err != nil {
+		log.Print(err)
+	}
+	fmt.Printf("%s\n", time)
 }
