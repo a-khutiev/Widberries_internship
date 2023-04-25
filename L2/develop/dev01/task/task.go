@@ -18,10 +18,12 @@ import (
 Программа должна корректно обрабатывать ошибки библиотеки: распечатывать их в STDERR и возвращать ненулевой код выхода в OS.
 Программа должна проходить проверки go vet и golint.
 */
-func Ain() {
+func Ain() error { // функция либо печатает время либо возращает и печает ошибку
 	time, err := ntp.Time("0.beevik-ntp.pool.ntp.org")
 	if err != nil {
 		log.Print(err)
+		return err
 	}
 	fmt.Printf("%s\n", time)
+	return err
 }
